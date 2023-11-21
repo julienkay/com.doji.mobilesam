@@ -1,0 +1,23 @@
+{
+   "name": "com.doji.mobilesam",
+   "version": "1.0.0",
+   "displayName": "MobileSAM",
+   "description": "Fast Segmentation with Unity Sentis",
+   "dependencies": {
+      "com.unity.sentis": "1.3.0-pre.1"
+   },
+   "author":
+   {
+      "name": "Doji Technologies",
+      "email": "support@doji-tech.com",
+      "url": "https://www.doji-tech.com/"
+   },
+   "documentationUrl": "https://www.doji-tech.com/mobilesam/",
+   "samples": [
+    {
+      "displayName": "Basic Sample",
+      "description": "Basic example on how to perform segmentation with an input texture.",
+      "path": "Samples~/01-BasicSample"
+    }
+  ]
+}
