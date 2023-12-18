@@ -8,6 +8,12 @@
         "com.unity.sentis": "1.3.0-pre.1"
       }
     },
+    "com.unity.asset-store-tools": {
+      "version": "file:com.unity.asset-store-tools",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.unity.burst": {
       "version": "1.8.10",
       "depth": 2,
