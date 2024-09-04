@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 using Unity.Sentis;
 using UnityEngine;
 
-namespace MobileSAM {
+namespace Doji.AI.Segmentation {
 
-    public class MobileSAMPredictor : IDisposable {
+    public class MobileSAM : IDisposable {
 
         public static Model Encoder {
             get {
@@ -26,7 +25,7 @@ namespace MobileSAM {
         public static Model Decoder {
             get {
                 if (_decoderAsset == null) {
-                    _decoderAsset = Resources.Load<ModelAsset>("ONNX/sam_onnx_example");
+                    _decoderAsset = Resources.Load<ModelAsset>("ONNX/mobilesam.decoder");
                 }
                 if (_decoderAsset == null) {
                     Debug.LogError("MobileSAM decoder ONNX model not found.");
@@ -79,7 +78,7 @@ namespace MobileSAM {
         /// Initializes a new instance of MiDaS.
         /// </summary>
         /// <param name="model">the reference to a MiDaS ONNX model</param>
-        public MobileSAMPredictor() {
+        public MobileSAM() {
             InitializeNetwork();
         }
 
@@ -105,7 +104,6 @@ namespace MobileSAM {
             Debug.Log(_encoderModel.inputs[0].name);
             Debug.Log(_encoderModel.inputs[0].shape);
         }
-
 
         public void PredictMasks(Texture input) {
             Tensor embeddings = EncodeImage(input);
@@ -183,7 +181,9 @@ namespace MobileSAM {
             Result = TextureConverter.ToTexture(masks as Tensor<float>, width, height);
 
         }
+        
         public Texture Result { get; private set; }
+        
         public void Dispose() {
             _encoder?.Dispose();
             _decoder?.Dispose();
