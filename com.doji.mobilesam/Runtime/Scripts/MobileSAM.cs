@@ -141,7 +141,7 @@ namespace Doji.AI.Segmentation {
         /// <summary>
         /// Predict masks for the given input prompts, using the currently set image.
         /// </summary>
-        /// <param name="pointCoords">A Vector2 array of point prompts to the model.
+        /// <param name="pointCoords">A float array of point prompts to the model.
         /// Each point is given in pixel coordinates.</param>
         /// <param name="pointLabels">A length N array of labels for the point prompts.
         /// 1 indicates a foreground point and 0 indicates a background point.</param>

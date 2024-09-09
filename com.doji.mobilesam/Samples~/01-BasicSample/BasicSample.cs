@@ -25,8 +25,6 @@ namespace Doji.AI.Segmentation.Samples {
         }
 
         public void PredictMask(Vector2 point) {
-            //point *= new Vector2(1f, -1f);
-            //Debug.Log(point);
             var points = new float[] { point.x, point.y };
             var labels = new float[] { 1f /* foreground */ };
             _mobileSAMPredictor.Predict(points, labels);
