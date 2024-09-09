@@ -18,6 +18,9 @@ namespace Doji.AI.Segmentation {
 
     /// <summary>
     /// Predictor using MobileSAM models.
+    /// Call <see cref="SetImage(Texture)"/> to specify the image you want to generate masks for.
+    /// After setting an image you can call <see cref="Predict(float[], float[], Rect?, Texture)"/>
+    /// to get the masks. The results will be stored in the <see cref="Result"/> RenderTexture.
     /// </summary>
     public class MobileSAM : IDisposable {
 
@@ -99,26 +102,11 @@ namespace Doji.AI.Segmentation {
         }
 
         /// <summary>
-        /// Encodes the given image and predicts the masks with the given parameters.
-        /// TOOD: for better performance expose methods that allow to encode image once,
-        /// and predict masks multiple times.
+        /// Encodes the input image and stores the calculated image embeddings.
+        /// The image only needs to be encoded once. Afterwards, you can query
+        /// as many masks as you want using the <see cref="Predict(float[], float[], Rect?, Texture)"/> method.
         /// </summary>
-        public void PredictMasks(
-            Texture input,
-            float[] pointCoords = null,
-            float[] pointLabels = null,
-            Rect? box = null,
-            Texture maskInput = null)
-        {
-            SetImage(input);
-            Predict(pointCoords, pointLabels, box, maskInput);
-        }
-
-        /// <summary>
-        /// Encodes the input image and stores the calculated image embeddings, allowing
-        /// masks to be predicted with the <see cref="PredictMasks"/> method.
-        /// </summary>
-        private void SetImage(Texture image) {
+        public void SetImage(Texture image) {
             Vector2Int origSize = new Vector2Int(image.height, image.width);
             // Transform the image to the form expected by the model
             //input_image = self.transform.apply_image(image)

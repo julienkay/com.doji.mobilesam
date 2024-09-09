@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace Doji.AI.Segmentation.Samples {
 
-    public class MobileSAM_BasicSample : MonoBehaviour, IPointerClickHandler {
+    public class MobileSAM_BasicSample : MonoBehaviour, IPointerDownHandler {
 
         private MobileSAM _mobileSAMPredictor;
 
@@ -15,6 +15,7 @@ namespace Doji.AI.Segmentation.Samples {
 
         public void Start () {
             _mobileSAMPredictor = new MobileSAM();
+            _mobileSAMPredictor.SetImage(SourceImage.texture);
             Result = _mobileSAMPredictor.Result;
             MaskImage.texture = _mobileSAMPredictor.Result;
         }
@@ -28,11 +29,11 @@ namespace Doji.AI.Segmentation.Samples {
             //Debug.Log(point);
             var points = new float[] { point.x, point.y };
             var labels = new float[] { 1f /* foreground */ };
-            _mobileSAMPredictor.PredictMasks(SourceImage.texture, points, labels);
+            _mobileSAMPredictor.Predict(points, labels);
             MaskImage.enabled = true;
         }
       
-        public void OnPointerClick(PointerEventData eventData) {
+        public void OnPointerDown(PointerEventData eventData) {
             if (eventData.button == PointerEventData.InputButton.Left) {
                 RectTransform rectTransform = SourceImage.GetComponent<RectTransform>();
 
