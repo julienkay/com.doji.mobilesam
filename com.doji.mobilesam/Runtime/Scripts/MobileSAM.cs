@@ -64,20 +64,9 @@ namespace Doji.AI.Segmentation {
         }
         private BackendType _backend = BackendType.CPU;
 
-        /// <summary>
-        /// Whether to normalize the estimated depth.
-        /// </summary>
-        /// <remarks>
-        /// MiDaS predicts depth values as inverse relative depth.
-        /// (small values for far away objects, large values for near objects)
-        /// If NormalizeDepth is enabled, these values are mapped to the (0, 1) range,
-        /// which is mostly useful for visualization.
-        /// </remarks>
-        public bool NormalizeDepth { get; set; } = true;
-
         private Worker _encoder;
         private Worker _decoder;
-        private Tensor[] _inputTensors = new Tensor[6];
+        private readonly Tensor[] _inputTensors = new Tensor[6];
 
         private bool _isImageSet;
         private Vector2Int _origSize;
