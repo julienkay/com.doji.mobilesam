@@ -13,9 +13,6 @@ namespace Doji.AI.Segmentation.Samples {
         public RectTransform DebugMarker;
         public RenderTexture Result;
 
-        private Vector2? _currentPoint;
-        private Camera _eventCamera;
-
         public void Start () {
             _mobileSAMPredictor = new MobileSAM();
             Result = _mobileSAMPredictor.Result;
@@ -38,8 +35,6 @@ namespace Doji.AI.Segmentation.Samples {
         public void OnPointerClick(PointerEventData eventData) {
             if (eventData.button == PointerEventData.InputButton.Left) {
                 RectTransform rectTransform = SourceImage.GetComponent<RectTransform>();
-                _currentPoint = eventData.position;
-                _eventCamera = eventData.pressEventCamera;
 
                 Vector2 localPoint;
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, eventData.position, eventData.pressEventCamera, out localPoint);
@@ -50,29 +45,20 @@ namespace Doji.AI.Segmentation.Samples {
 
                 Vector2 uvPosition = new Vector2(normalizedX, 1.0f - normalizedY);
                 Vector2 textureSpacePos = new Vector2(SourceImage.texture.width, SourceImage.texture.height) * uvPosition;
-                Debug.Log(textureSpacePos);
 
                 // Ensure click was inside of the texture area
                 if (uvPosition.x >= 0 && uvPosition.x <= 1 && uvPosition.y >= 0 && uvPosition.y <= 1) {
-                    MoveDebugMarker(localPoint);
+                    MoveDebugMarker(uvPosition);
                     PredictMask(textureSpacePos);
                 }
             }
         }
 
-        private void OnRectTransformDimensionsChange() {
-            // move point in case canvas changed size
-            if (_currentPoint != null) {
-                RectTransform rectTransform = SourceImage.GetComponent<RectTransform>();
-                Vector2 localPoint;
-                RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, _currentPoint.Value, _eventCamera, out localPoint);
-                MoveDebugMarker(localPoint);
-            }
-        }
-
-        private void MoveDebugMarker(Vector2 localPosition) {
+        private void MoveDebugMarker(Vector2 uvPosition) {
             if (DebugMarker != null) {
-                DebugMarker.anchoredPosition = localPosition;
+                uvPosition.y = 1f - uvPosition.y;
+                DebugMarker.anchorMin = uvPosition;
+                DebugMarker.anchorMax = uvPosition;
                 DebugMarker.gameObject.SetActive(true);
             }
         }
