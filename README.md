@@ -9,7 +9,7 @@ Fast Segmentation with Unity Sentis using [MobileSAM](https://github.com/Chaonin
 
 ## References
 
-[^1]: [Chaoning Zhang and Dongshen Han and Yu Qiao and Jung Uk Kim and Sung-Ho Bae and Seungkyu Lee and Choong Seon Hong: Towards Lightweight SAM for Mobile Applications. arXiv preprint arXiv:2306.14289, 2023](https://github.com/ChaoningZhang/MobileSAM)
+[^1]: [Chaoning Zhang and Dongshen Han and Yu Qiao and Jung Uk Kim and Sung-Ho Bae and Seungkyu Lee and Choong Seon Hong: Faster Segment Anything: Towards Lightweight SAM for Mobile Applications. arXiv preprint arXiv:2306.14289, 2023](https://github.com/ChaoningZhang/MobileSAM)
 
 [OpenUPM]: https://openupm.com/packages/com.doji.mobilesam
 [Documentation (coming soon)]: https://github.com/julienkay/com.doji.mobilesam
