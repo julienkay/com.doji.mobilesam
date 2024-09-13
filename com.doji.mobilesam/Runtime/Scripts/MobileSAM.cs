@@ -60,13 +60,18 @@ namespace Doji.AI.Segmentation {
             get => _backend;
             set {
                 if (_backend != value) {
-                    Dispose();
+                    DisposeModels();
                     _backend = value;
                     InitializeNetwork();
                 }
             }
         }
         private BackendType _backend = BackendType.CPU;
+
+        /// <summary>
+        /// Which format the predicted masks are returned as.
+        /// </summary>
+        public RenderTextureFormat OutputFormat { get; set; } = RenderTextureFormat.ARGB32;
 
         private Worker _encoder;
         private Worker _decoder;
@@ -80,9 +85,8 @@ namespace Doji.AI.Segmentation {
         public RenderTexture Result { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of MiDaS.
+        /// Initializes a new instance of a mask predictor.
         /// </summary>
-        /// <param name="model">the reference to a MiDaS ONNX model</param>
         public MobileSAM() {
             InitializeNetwork();
         }
@@ -116,7 +120,7 @@ namespace Doji.AI.Segmentation {
             using Tensor inputImageTensor = ApplyImage(image);
             SetImage(inputImageTensor, origSize);
             if (Result != null) Result.Release();   
-            Result = new RenderTexture(image.width, image.height, 0, RenderTextureFormat.RFloat);
+            Result = new RenderTexture(image.width, image.height, 0, OutputFormat);
         }
 
         public void SetImage(Tensor transformedImage, (int height, int width) origSize) {
@@ -171,7 +175,7 @@ namespace Doji.AI.Segmentation {
             using Tensor<float> orig_im_size = new Tensor<float>(new TensorShape(2), new float[] { _origSize.height, _origSize.width });
 
             var result = Predict(point_coords, point_labels, mask_input, has_mask_input, orig_im_size);
-            TextureConverter.RenderToTexture(result.Masks, Result);
+            TextureConverter.RenderToTexture(result.Masks, Result, new TextureTransform().SetBroadcastChannels(true));
         }
 
         private DecoderOutput Predict(
@@ -209,9 +213,13 @@ namespace Doji.AI.Segmentation {
         }
 
         public void Dispose() {
+            DisposeModels();
+            Result.Release();
+        }
+
+        private void DisposeModels() {
             _encoder?.Dispose();
             _decoder?.Dispose();
-            Result.Release();
         }
     }
 }
