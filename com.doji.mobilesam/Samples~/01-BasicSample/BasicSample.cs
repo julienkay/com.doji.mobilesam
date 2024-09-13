@@ -8,6 +8,7 @@ namespace Doji.AI.Segmentation.Samples {
 
         private MobileSAM _mobileSAMPredictor;
 
+        public Texture2D SampleImage;
         public RawImage SourceImage;
         public RawImage MaskImage;
         public RectTransform DebugMarker;
@@ -61,5 +62,15 @@ namespace Doji.AI.Segmentation.Samples {
                 DebugMarker.gameObject.SetActive(true);
             }
         }
+
+#if UNITY_EDITOR
+        private void OnValidate() {
+            var ar = SourceImage.GetComponent<AspectRatioFitter>();
+            if (SampleImage != null && ar != null) {
+                ar.aspectRatio = (float)SampleImage.width / SampleImage.height;
+                SourceImage.texture = SampleImage;
+            }
+        }
+#endif
     }
 }

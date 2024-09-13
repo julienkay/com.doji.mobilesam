@@ -386,6 +386,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5780a79aad6873b40957684d44cdf4f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  SampleImage: {fileID: 2800000, guid: 58d7305083c105e4f85c947aa9f9989a, type: 3}
   SourceImage: {fileID: 1021241315}
   MaskImage: {fileID: 17897639}
   DebugMarker: {fileID: 1296482771}
@@ -606,7 +607,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 2800000, guid: 5a5ef872833eff14f806e35158310f0b, type: 3}
+  m_Texture: {fileID: 2800000, guid: 58d7305083c105e4f85c947aa9f9989a, type: 3}
   m_UVRect:
     serializedVersion: 2
     x: 0
@@ -626,7 +627,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_AspectMode: 3
-  m_AspectRatio: 1
+  m_AspectRatio: 1.5256257
 --- !u!222 &1021241317
 CanvasRenderer:
   m_ObjectHideFlags: 0
