@@ -1,6 +1,7 @@
 using System;
 using Unity.Sentis;
 using UnityEngine;
+using static Doji.AI.Segmentation.MobileSAM.Transforms;
 
 namespace Doji.AI.Segmentation {
 
@@ -22,7 +23,7 @@ namespace Doji.AI.Segmentation {
     /// After setting an image you can call <see cref="Predict(float[], float[], Rect?, Texture)"/>
     /// to get the masks. The results will be stored in the <see cref="Result"/> RenderTexture.
     /// </summary>
-    public class MobileSAM : IDisposable {
+    public partial class MobileSAM : IDisposable {
 
         public Model Encoder {
             get {
@@ -72,14 +73,11 @@ namespace Doji.AI.Segmentation {
         private readonly Tensor[] _inputTensors = new Tensor[6];
 
         private bool _isImageSet;
-        private Vector2Int _origSize;
+        private (int height, int width) _origSize;
         private Vector2Int _inputSize;
         private Tensor _features;
 
         public RenderTexture Result { get; private set; }
-
-        // the input image size of the image encoder
-        private const int IMG_SIZE = 1024;
 
         /// <summary>
         /// Initializes a new instance of MiDaS.
@@ -113,7 +111,7 @@ namespace Doji.AI.Segmentation {
         /// as many masks as you want.
         /// </remarks>
         public void SetImage(Texture image) {
-            Vector2Int origSize = new Vector2Int(image.height, image.width);
+            var origSize = (image.height, image.width);
             // Transform the image to the form expected by the model
             using Tensor inputImageTensor = ApplyImage(image);
             SetImage(inputImageTensor, origSize);
@@ -121,24 +119,7 @@ namespace Doji.AI.Segmentation {
             Result = new RenderTexture(image.width, image.height, 0, RenderTextureFormat.RFloat);
         }
 
-        private Tensor ApplyImage(Texture image) {
-            TextureTransform transform = new TextureTransform();
-
-            // expects shape in HxWxC format.
-            transform.SetTensorLayout(TensorLayout.NHWC);
-
-            // resize longest side to 1024
-            float scale = (float)IMG_SIZE / Math.Max(image.width, image.height);
-            int newW = (int)(image.width * scale + 0.5f);
-            int newH = (int)(image.height * scale + 0.5f);
-            transform.SetDimensions(newW, newH);
-
-            var tensor = TextureConverter.ToTensor(image, transform);
-            tensor.Reshape(tensor.shape.Squeeze(0));
-            return tensor;
-        }
-
-        public void SetImage(Tensor transformedImage, Vector2Int origSize) {
+        public void SetImage(Tensor transformedImage, (int height, int width) origSize) {
             Debug.Assert(Math.Max(transformedImage.shape[0], transformedImage.shape[1]) == IMG_SIZE, "Image must have a long side of {IMG_SIZE}}.");
             ResetImage();
             _origSize = origSize;
@@ -166,38 +147,28 @@ namespace Doji.AI.Segmentation {
         /// Each point is given in pixel coordinates.</param>
         /// <param name="pointLabels">A length N array of labels for the point prompts.
         /// 1 indicates a foreground point and 0 indicates a background point.</param>
-        /// <param name="box">a box prompt to the model.</param>
-        /// <param name="maskInput">A low resolution mask input to the model, typically
-        /// coming from a previous prediction iteration.</param>
-        public void Predict(
-            float[] pointCoords = null,
-            float[] pointLabels = null,
-            Rect? box = null,
-            Texture maskInput = null)
-        {
+        public void Predict(float[] pointCoords, float[] pointLabels) {
             if (!_isImageSet) {
                 throw new InvalidOperationException("An image must be set with .SetImage(...) before mask prediction.");
             }
-            if (box != null) {
-                throw new NotImplementedException("Box inputs not supported yet.");
+            if (pointCoords == null) {
+                throw new ArgumentNullException("pointCoords can not be null.", nameof(pointCoords));
             }
-            if (maskInput != null) {
-                throw new NotImplementedException("Mask inputs not supported yet.");
+            if (pointLabels == null) {
+                throw new ArgumentNullException("pointLabels can not be null.", nameof(pointLabels));
             }
 
-            if (pointCoords != null) {
-                Debug.Assert(pointLabels != null, "pointLabels must be supplied if point_coords is supplied.");
-            }
             int numPoints = pointCoords?.Length / 2 ?? 0;
             int numLabels = pointLabels?.Length ?? 0;
             if (numPoints != numLabels) {
                 throw new ArgumentException("number of point labels does not match the number of points.");
             }
+            pointCoords = ApplyCoords(pointCoords, _origSize);
             using Tensor<float> point_coords = new Tensor<float>(new TensorShape(1, numPoints, 2), pointCoords);
             using Tensor<float> point_labels = new Tensor<float>(new TensorShape(1, numPoints), pointLabels);
             using Tensor<float> mask_input = new Tensor<float>(new TensorShape(1, 1, 256, 256));
             using Tensor<float> has_mask_input = new Tensor<float>(new TensorShape(1), new float[] { 0f });
-            using Tensor<float> orig_im_size = new Tensor<float>(new TensorShape(2), new float[] { _origSize.x, _origSize.y });
+            using Tensor<float> orig_im_size = new Tensor<float>(new TensorShape(2), new float[] { _origSize.height, _origSize.width });
 
             var result = Predict(point_coords, point_labels, mask_input, has_mask_input, orig_im_size);
             TextureConverter.RenderToTexture(result.Masks, Result);
