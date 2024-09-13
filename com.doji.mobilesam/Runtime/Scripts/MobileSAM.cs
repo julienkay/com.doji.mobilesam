@@ -78,13 +78,15 @@ namespace Doji.AI.Segmentation {
 
         public RenderTexture Result { get; private set; }
 
+        // the input image size of the image encoder
+        private const int IMG_SIZE = 1024;
+
         /// <summary>
         /// Initializes a new instance of MiDaS.
         /// </summary>
         /// <param name="model">the reference to a MiDaS ONNX model</param>
         public MobileSAM() {
             InitializeNetwork();
-            Result = new RenderTexture(1024, 1024, 0, RenderTextureFormat.RFloat);
         }
 
         private void InitializeNetwork() {
@@ -102,23 +104,42 @@ namespace Doji.AI.Segmentation {
         }
 
         /// <summary>
-        /// Encodes the input image and stores the calculated image embeddings.
-        /// The image only needs to be encoded once. Afterwards, you can query
-        /// as many masks as you want using the <see cref="Predict(float[], float[], Rect?, Texture)"/> method.
+        /// Specifies the image to be used for mask generation using the
+        /// <see cref="Predict(float[], float[], Rect?, Texture)"/> method.
         /// </summary>
+        /// <remarks>
+        /// This encodes the input image and stores the calculated image embeddings.
+        /// The image only needs to be encoded once. Afterwards, you can query
+        /// as many masks as you want.
+        /// </remarks>
         public void SetImage(Texture image) {
             Vector2Int origSize = new Vector2Int(image.height, image.width);
             // Transform the image to the form expected by the model
-            //input_image = self.transform.apply_image(image)
-            TextureTransform transform = new TextureTransform();
-            transform.SetTensorLayout(TensorLayout.NHWC);
-            using Tensor inputImageTensor = TextureConverter.ToTensor(image, transform);
-            inputImageTensor.Reshape(inputImageTensor.shape.Squeeze(0));
+            using Tensor inputImageTensor = ApplyImage(image);
             SetImage(inputImageTensor, origSize);
+            if (Result != null) Result.Release();   
+            Result = new RenderTexture(image.width, image.height, 0, RenderTextureFormat.RFloat);
         }
 
-        private void SetImage(Tensor transformedImage, Vector2Int origSize) {
-            //Debug.Assert(Math.Max(input.width, input.height) == 1024, "set_torch_image input image must have a long sideof 1024.");
+        private Tensor ApplyImage(Texture image) {
+            TextureTransform transform = new TextureTransform();
+
+            // expects shape in HxWxC format.
+            transform.SetTensorLayout(TensorLayout.NHWC);
+
+            // resize longest side to 1024
+            float scale = (float)IMG_SIZE / Math.Max(image.width, image.height);
+            int newW = (int)(image.width * scale + 0.5f);
+            int newH = (int)(image.height * scale + 0.5f);
+            transform.SetDimensions(newW, newH);
+
+            var tensor = TextureConverter.ToTensor(image, transform);
+            tensor.Reshape(tensor.shape.Squeeze(0));
+            return tensor;
+        }
+
+        public void SetImage(Tensor transformedImage, Vector2Int origSize) {
+            Debug.Assert(Math.Max(transformedImage.shape[0], transformedImage.shape[1]) == IMG_SIZE, "Image must have a long side of {IMG_SIZE}}.");
             ResetImage();
             _origSize = origSize;
             _inputSize = new Vector2Int(transformedImage.shape[-2], transformedImage.shape[-1]);
@@ -179,7 +200,6 @@ namespace Doji.AI.Segmentation {
             using Tensor<float> orig_im_size = new Tensor<float>(new TensorShape(2), new float[] { _origSize.x, _origSize.y });
 
             var result = Predict(point_coords, point_labels, mask_input, has_mask_input, orig_im_size);
-
             TextureConverter.RenderToTexture(result.Masks, Result);
         }
 
@@ -220,6 +240,7 @@ namespace Doji.AI.Segmentation {
         public void Dispose() {
             _encoder?.Dispose();
             _decoder?.Dispose();
+            Result.Release();
         }
     }
 }
