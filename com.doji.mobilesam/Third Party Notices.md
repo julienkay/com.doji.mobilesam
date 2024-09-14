@@ -1,7 +1,9 @@
-This package contains third-party software components governed by the license(s) indicated below:
+This package contains third-party neural network models governed by the license(s) indicated below:
+
 ---------
 
-Component Name: MobileSAM
+Source: https://github.com/ChaoningZhang/MobileSAM
+Component Name: MobileSAM models
 
 License Type: Apache License
 
