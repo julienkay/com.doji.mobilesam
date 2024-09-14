@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -11,8 +12,13 @@ namespace Doji.AI.Segmentation.Samples {
         public Texture2D SampleImage;
         public RawImage SourceImage;
         public RawImage MaskImage;
-        public RectTransform DebugMarker;
+        public GameObject DebugMarkerPrefab;
         public RenderTexture Result;
+
+        private List<float> _points = new List<float>();
+        private List<float> _labels = new List<float>();
+        
+        private List<GameObject> _pointUIElements = new List<GameObject>();
 
         public void Start () {
             _mobileSAMPredictor = new MobileSAM();
@@ -25,15 +31,13 @@ namespace Doji.AI.Segmentation.Samples {
             _mobileSAMPredictor?.Dispose();
         }
 
-        public void PredictMask(Vector2 point) {
-            var points = new float[] { point.x, point.y };
-            var labels = new float[] { 1f /* foreground */ };
-            _mobileSAMPredictor.Predict(points, labels);
+        public void PredictMask() {
+            _mobileSAMPredictor.Predict(_points.ToArray(), _labels.ToArray());
             MaskImage.enabled = true;
         }
       
         public void OnPointerDown(PointerEventData eventData) {
-            if (eventData.button == PointerEventData.InputButton.Left) {
+            if (eventData.button != PointerEventData.InputButton.Middle) {
                 RectTransform rectTransform = SourceImage.GetComponent<RectTransform>();
 
                 Vector2 localPoint;
@@ -48,19 +52,45 @@ namespace Doji.AI.Segmentation.Samples {
 
                 // Ensure click was inside of the texture area
                 if (uvPosition.x >= 0 && uvPosition.x <= 1 && uvPosition.y >= 0 && uvPosition.y <= 1) {
-                    MoveDebugMarker(uvPosition);
-                    PredictMask(textureSpacePos);
+                    bool foreground = eventData.button == PointerEventData.InputButton.Left;
+                    AddDebugMarker(uvPosition, foreground);
+                    AddPoint(textureSpacePos, foreground);
+                    PredictMask();
                 }
             }
         }
 
-        private void MoveDebugMarker(Vector2 uvPosition) {
-            if (DebugMarker != null) {
-                uvPosition.y = 1f - uvPosition.y;
-                DebugMarker.anchorMin = uvPosition;
-                DebugMarker.anchorMax = uvPosition;
-                DebugMarker.gameObject.SetActive(true);
+        private void AddPoint(Vector2 point, bool foreground) {
+            _points.Add(point.x);
+            _points.Add(point.y);
+            _labels.Add(foreground ? 1f : 0f);
+        }
+
+        private void AddDebugMarker(Vector2 uvPosition, bool foreground) {
+            var debugMarker = Instantiate(DebugMarkerPrefab, SourceImage.transform);
+            var rT = debugMarker.GetComponent<RectTransform>();
+            uvPosition.y = 1f - uvPosition.y;
+            rT.anchorMin = uvPosition;
+            rT.anchorMax = uvPosition;
+            debugMarker.SetActive(true);
+            debugMarker.GetComponent<Image>().color = foreground ? Color.green : Color.blue;
+            _pointUIElements.Add(debugMarker);
+        }
+
+        private void Update() {
+            if (Input.GetKeyDown(KeyCode.Escape)) {
+                DeleteAllPoints();
             }
+        }
+
+        private void DeleteAllPoints() {
+            _points.Clear();
+            _labels.Clear();
+            foreach (var point in _pointUIElements) {
+                DestroyImmediate(point);
+            }
+            _pointUIElements.Clear();
+            MaskImage.enabled = false;
         }
 
 #if UNITY_EDITOR
