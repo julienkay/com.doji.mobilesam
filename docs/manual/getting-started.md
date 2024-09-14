@@ -38,7 +38,7 @@ To perform segmentation on an image, you need to provide the input image as a `T
 
 ### Setting an Image for Segmentation
 
-Before running the segmentation, you must set the image using the @Doji.AI.Segmentation.MobileSAM.SetImage(Texture) method:
+Before running the segmentation, you must set the image using the [SetImage(Texture)](xref:Doji.AI.Segmentation.MobileSAM.SetImage(Texture)) method:
 
 ```csharp
 _mobileSAMPredictor.SetImage(TestImage);
@@ -48,7 +48,7 @@ This method processes the image and prepares it for segmentation.
 
 ### Predicting Masks
 
-To predict masks, use the <xref href="Doji.AI.Segmentation.MobileSAM.Predict(System.Single%5b%5d%2cSystem.Single%5b%5d%2cSystem.Nullable%7bRect%7d%2cTexture)" data-throw-if-not-resolved="false"></xref> method:
+To predict masks, use the [Predict(float[], float[])](xref:Doji.AI.Segmentation.MobileSAM.Predict(System.Single[],System.Single[])) method:
 
 ```csharp
 _mobileSAMPredictor.Predict(pointCoords, pointLabels);

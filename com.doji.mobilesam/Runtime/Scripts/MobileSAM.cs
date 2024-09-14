@@ -20,7 +20,7 @@ namespace Doji.AI.Segmentation {
     /// <summary>
     /// Predictor using MobileSAM models.
     /// Call <see cref="SetImage(Texture)"/> to specify the image you want to generate masks for.
-    /// After setting an image you can call <see cref="Predict(float[], float[], Rect?, Texture)"/>
+    /// After setting an image you can call <see cref="Predict(float[], float[])"/>
     /// to get the masks. The results will be stored in the <see cref="Result"/> RenderTexture.
     /// </summary>
     public partial class MobileSAM : IDisposable {
@@ -107,7 +107,7 @@ namespace Doji.AI.Segmentation {
 
         /// <summary>
         /// Specifies the image to be used for mask generation using the
-        /// <see cref="Predict(float[], float[], Rect?, Texture)"/> method.
+        /// <see cref="Predict(float[], float[])"/> method.
         /// </summary>
         /// <remarks>
         /// This encodes the input image and stores the calculated image embeddings.

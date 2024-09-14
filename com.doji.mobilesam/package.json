@@ -2,7 +2,7 @@
   "name": "com.doji.mobilesam",
   "version": "1.0.0",
   "displayName": "MobileSAM",
-  "description": "Fast Segmentation with Unity Sentis",
+  "description": "Fast Segmentation with Unity Sentis using MobileSAM",
   "dependencies": {
     "com.unity.sentis": "2.0.0"
   },
@@ -11,7 +11,7 @@
     "email": "support@doji-tech.com",
     "url": "https://www.doji-tech.com/"
   },
-  "documentationUrl": "https://www.doji-tech.com/mobilesam/",
+  "documentationUrl": "https://docs.doji-tech.com/com.doji.mobilesam/",
   "samples": [
     {
       "displayName": "Shared Sample Assets (Required)",
